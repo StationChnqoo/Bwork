@@ -1,4 +1,3 @@
-import CheckBox from '@src/components/CheckBox';
 import Flex from '@src/components/Flex';
 import MoreButton from '@src/components/MoreButton';
 import Stepper from '@src/components/Stepper';
@@ -11,16 +10,18 @@ import {
   JobStabilityOptions,
   LeaderRelationOptions,
   ShuttleServiceOptions,
+  Tips,
   UniversityTypeOptions,
   WorkEnvironmentOptions,
   WorkExperienceOptions,
 } from '@src/constants/c';
 import {useCaches} from '@src/constants/store';
-import {WorthForm} from '@src/constants/t';
+import {JobInput} from '@src/constants/t';
 import dayjs from 'dayjs';
 import {produce} from 'immer';
 import React, {useEffect} from 'react';
 import {
+  Alert,
   Image,
   Platform,
   ScrollView,
@@ -67,21 +68,6 @@ const WorkthTester: React.FC<MyProps> = props => {
     android: StatusBar.currentHeight,
   });
 
-  const frames = useSafeAreaInsets();
-
-  const supportedGames = {
-    gj: {
-      title: '够级（鹰 🦅）',
-      page: 'Gouji',
-      message: '6副牌、4副牌',
-    },
-    bh: {
-      title: '保皇（炸弹 💣 ）',
-      page: 'Baohuang',
-      message: '潍坊保皇、疯狂保皇',
-    },
-  };
-
   useEffect(() => {
     if (pack == 4) {
       setIsEagle(false);
@@ -89,7 +75,7 @@ const WorkthTester: React.FC<MyProps> = props => {
     return function () {};
   }, [pack]);
 
-  const updateForm = (key: keyof WorthForm, value: any) => {
+  const updateForm = (key: keyof JobInput, value: any) => {
     console.log('formData: ', formData);
     setFormData(
       produce(formData, draft => {
@@ -109,6 +95,9 @@ const WorkthTester: React.FC<MyProps> = props => {
     return function () {};
   }, []);
 
+  const alert = (title: string, message: string) => {
+    Alert.alert(title, message, [{text: '好的', onPress: () => {}}]);
+  };
   return (
     <View style={styles.container}>
       <View style={{backgroundColor: '#fff', height}} />
@@ -129,8 +118,8 @@ const WorkthTester: React.FC<MyProps> = props => {
             <View style={styles.settingItem}>
               <Text style={{fontSize: 14, color: '#333'}}>工作国家</Text>
               <MoreButton
-                label={`${Countries[formData.countryCode].name} | PPP系数${
-                  Countries[formData.countryCode].pppFactor
+                label={`${Countries[formData.country].name} | PPP系数${
+                  Countries[formData.country].pppFactor
                 }`}
                 onPress={() => {}}
               />
@@ -147,16 +136,29 @@ const WorkthTester: React.FC<MyProps> = props => {
                 <Text style={{fontSize: 14, color: '#333'}}>每周工作天数</Text>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.workDaysPerWeek}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.weeklyDays}
+                  onChange={s => updateForm('weeklyDays', s)}
                 />
               </View>
               <View style={{alignItems: 'center'}}>
-                <Text style={{fontSize: 14, color: '#333'}}>周WFH天数</Text>
+                <Flex horizontal>
+                  <Text style={{fontSize: 14, color: '#333'}}>周WFH天数</Text>
+                  <View style={{width: 4}} />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      alert('周WFH天数', Tips.WFH);
+                    }}>
+                    <Image
+                      source={require('@src/assets/images/common/form_help.png')}
+                      style={{height: 16, width: 16, tintColor: theme}}
+                    />
+                  </TouchableOpacity>
+                </Flex>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.salary}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.weeklyWFH}
+                  onChange={s => updateForm('weeklyWFH', s)}
                 />
               </View>
             </View>
@@ -166,8 +168,8 @@ const WorkthTester: React.FC<MyProps> = props => {
                 <Text style={{fontSize: 14, color: '#333'}}>年假天数</Text>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.annualLeave}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.companyAnnualLeave}
+                  onChange={s => updateForm('companyAnnualLeave', s)}
                 />
               </View>
               <View style={{alignItems: 'center'}}>
@@ -175,42 +177,68 @@ const WorkthTester: React.FC<MyProps> = props => {
                 <View style={{height: 5}} />
                 <Stepper
                   value={formData.publicHolidays}
-                  onChange={s => updateForm('salary', s)}
+                  onChange={s => updateForm('publicHolidays', s)}
                 />
               </View>
               <View style={{alignItems: 'center'}}>
                 <Text style={{fontSize: 14, color: '#333'}}>带薪病假</Text>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.paidSickLeave}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.sickLeave}
+                  onChange={s => updateForm('sickLeave', s)}
                 />
               </View>
             </View>
             <View style={{height: 12}} />
             <View style={styles.settingItem}>
               <View style={{alignItems: 'center'}}>
-                <Text style={{fontSize: 14, color: '#333'}}>总工时/H</Text>
+                <Flex horizontal>
+                  <Text style={{fontSize: 14, color: '#333'}}>总工时/H</Text>
+                  <View style={{width: 4}} />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      alert('总工时', Tips.HoursOfDay);
+                    }}>
+                    <Image
+                      source={require('@src/assets/images/common/form_help.png')}
+                      style={{height: 16, width: 16, tintColor: theme}}
+                    />
+                  </TouchableOpacity>
+                </Flex>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.workHours}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.dailyHours}
+                  onChange={s => updateForm('dailyHours', s)}
                 />
               </View>
               <View style={{alignItems: 'center'}}>
-                <Text style={{fontSize: 14, color: '#333'}}>通勤/H</Text>
+                <Flex horizontal>
+                  <Text style={{fontSize: 14, color: '#333'}}>通勤/H</Text>
+                  <View style={{width: 4}} />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      alert('通勤', Tips.BusOfDay);
+                    }}>
+                    <Image
+                      source={require('@src/assets/images/common/form_help.png')}
+                      style={{height: 16, width: 16, tintColor: theme}}
+                    />
+                  </TouchableOpacity>
+                </Flex>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.commuteHours}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.commuteHoursPerDay}
+                  onChange={s => updateForm('commuteHoursPerDay', s)}
                 />
               </View>
               <View style={{alignItems: 'center'}}>
                 <Text style={{fontSize: 14, color: '#333'}}>休息&摸鱼/H</Text>
                 <View style={{height: 5}} />
                 <Stepper
-                  value={formData.restTime}
-                  onChange={s => updateForm('salary', s)}
+                  value={formData.slackingHoursPerDay}
+                  onChange={s => updateForm('slackingHoursPerDay', s)}
                 />
               </View>
             </View>
@@ -222,9 +250,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={WorkEnvironmentOptions}
               onPress={s => {
-                updateForm('jobStability', s.value);
+                updateForm('environment', s.value);
               }}
-              current={formData.jobStability}
+              current={formData.environment}
             />
           </View>
           <View style={{height: 12}} />
@@ -248,9 +276,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={EducationLevelOptions}
               onPress={s => {
-                updateForm('jobStability', s.value);
+                updateForm('education', s.value);
               }}
-              current={formData.jobStability}
+              current={formData.education}
             />
             <View style={{height: 10}} />
             <Text style={{color: '#333', fontSize: 14}}>学校类型</Text>
@@ -258,9 +286,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={UniversityTypeOptions}
               onPress={s => {
-                updateForm('jobStability', s.value);
+                updateForm('university', s.value);
               }}
-              current={formData.jobStability}
+              current={formData.university}
             />
           </View>
           <View style={{height: 12}} />
@@ -270,9 +298,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={LeaderRelationOptions}
               onPress={s => {
-                updateForm('leadership', s.value);
+                updateForm('leader', s.value);
               }}
-              current={formData.leadership}
+              current={formData.leader}
             />
           </View>
           <View style={{height: 12}} />
@@ -282,20 +310,20 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={CityTierOptions}
               onPress={s => {
-                updateForm('cityFactor', s.value);
+                updateForm('city', s.value);
               }}
-              current={formData.cityFactor}
+              current={formData.city}
             />
             <View style={{height: 10}} />
             <Flex justify={'space-between'} horizontal>
               <Text style={{color: '#333', fontSize: 14}}>是否在家乡</Text>
               <Switch
-                value={isKeyboardFeedback}
+                value={formData.isHometown}
                 onValueChange={value => {
-                  setIsKeyboardFeedback(value);
+                  updateForm('isHometown', !formData.isHometown);
                 }}
                 trackColor={{false: '#ccc', true: theme}}
-                thumbColor={cardSound ? '#fff' : '#f4f3f4'}
+                thumbColor={formData.isHometown ? '#fff' : '#f4f3f4'}
               />
             </Flex>
           </View>
@@ -306,9 +334,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={WorkExperienceOptions}
               onPress={s => {
-                updateForm('cityFactor', s.value);
+                updateForm('experience', s.value);
               }}
-              current={formData.cityFactor}
+              current={formData.experience}
             />
           </View>
           <View style={{height: 12}} />
@@ -318,9 +346,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={ColleagueRelationOptions}
               onPress={s => {
-                updateForm('degreeType', s.value);
+                updateForm('colleague', s.value);
               }}
-              current={formData.degreeType}
+              current={formData.colleague}
             />
           </View>
           <View style={{height: 12}} />
@@ -332,9 +360,9 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={ShuttleServiceOptions}
               onPress={s => {
-                updateForm('degreeType', s.value);
+                updateForm('shuttle', s.value);
               }}
-              current={formData.degreeType}
+              current={formData.shuttle}
             />
             <View style={{height: 10}} />
             <Text style={{color: '#333', fontSize: 14}}>食堂情况</Text>
@@ -342,26 +370,22 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Tags
               datas={CanteenQualityOptions}
               onPress={s => {
-                updateForm('degreeType', s.value);
+                updateForm('canteen', s.value);
               }}
-              current={formData.degreeType}
+              current={formData.canteen}
             />
           </View>
         </View>
         <View style={{height: 16}} />
         <TouchableOpacity
           activeOpacity={0.8}
-          style={[
-            styles.startButton,
-            {backgroundColor: theme, marginBottom: 16},
-          ]}
-          onPress={() => {
-            navigation.navigate(supportedGames[defaultGame].page);
-          }}>
+          style={[styles.startButton, {backgroundColor: theme}]}
+          onPress={() => {}}>
           <Text style={{color: '#fff', fontSize: 16}}>
             查看我的工作性价比报告
           </Text>
         </TouchableOpacity>
+        <View style={{height: 16}} />
       </ScrollView>
     </View>
   );

@@ -3,7 +3,19 @@ import {createJSONStorage, devtools, persist} from 'zustand/middleware';
 
 import {MMKV} from 'react-native-mmkv';
 import {StateStorage} from 'zustand/middleware';
-import {Game, KeyValue, WorthForm} from './t';
+import {Game, JobInput, KeyValue} from './t';
+import {
+  CanteenQuality,
+  CityTier,
+  ColleagueRelation,
+  EducationLevel,
+  JobStability,
+  LeaderRelation,
+  ShuttleService,
+  UniversityType,
+  WorkEnvironment,
+  WorkExperience,
+} from './c';
 
 const mmkv = new MMKV();
 const mmkvStorage: StateStorage = {
@@ -35,8 +47,8 @@ interface States {
   setIsEagle: (isEagle: boolean) => void;
   gameArea: string; // 'wf' | 'fk'; // 潍坊 | 疯狂
   setGameArea: (gameArea: 'wf' | 'fk') => void;
-  formData: WorthForm;
-  setFormData: (formData: WorthForm) => void;
+  formData: JobInput;
+  setFormData: (formData: JobInput) => void;
 }
 
 const initialState = {
@@ -52,31 +64,28 @@ const initialState = {
   isEagle: true, // 默认带鹰
   gameArea: 'wf', // 默认潍坊
   formData: {
-    salary: '0',
-    countryCode: 'CN',
-    workDaysPerWeek: '5',
-    wfhDaysPerWeek: '0',
-    annualLeave: '5',
-    paidSickLeave: '3',
-    publicHolidays: '13',
-    workHours: '10',
-    commuteHours: '2',
-    restTime: '2',
-    cityFactor: '1.0',
-    workEnvironment: '1.0',
-    leadership: '1.0',
-    teamwork: '1.0',
-    homeTown: 'no',
-    degreeType: 'bachelor',
-    schoolType: 'firstTier',
-    bachelorType: 'firstTier',
-    workYears: '0',
-    shuttle: '1.0',
-    canteen: '1.0',
-    jobStability: 'private', // 新增：工作稳定度/类型
-    education: '1.0',
-    hasShuttle: false, // 确保这是一个明确的布尔值
-    hasCanteen: false, // 确保这是一个明确的布尔值
+    jobStability: JobStability.Private, // 默认私企
+    city: CityTier.FirstTier, // 默认一线城市
+    isHometown: false, // 默认不在家乡
+    leader: LeaderRelation.Neutral, // 默认中规中矩
+    colleague: ColleagueRelation.Harmonious, // 默认和和睦睦
+    education: EducationLevel.Bachelor, // 默认本科
+    university: UniversityType.Others, // 默认双非/其他
+    environment: WorkEnvironment.Normal, // 默认普通环境
+    experience: WorkExperience.OneToThree, // 默认 1~3 年
+    salary: '200', // 默认年薪 20w
+    country: 'CN', // 中国
+    dailyHours: '9', // 日总工时（含通勤）
+    commuteHoursPerDay: '1', // 单程通勤 1 小时
+    slackingHoursPerDay: '1', // 每天摸鱼 1 小时
+    leaveDays: '16', // 总休假 = 法定节假日 + 公司年假
+    weeklyDays: '5', // 每周工作天数 5
+    weeklyWFH: '0', // 每周居家 0 天
+    sickLeave: '3', // 带薪病假 3 天
+    publicHolidays: '11', // 国家法定节假日 11 天
+    companyAnnualLeave: '5', // 公司年假 5 天
+    shuttle: ShuttleService.Unreachable, // 默认无班车
+    canteen: CanteenQuality.Average, // 默认食堂一般
   },
 };
 

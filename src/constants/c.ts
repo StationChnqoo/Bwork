@@ -1,50 +1,4 @@
-/**
- * 3A 4K 5Q 6A 7K 8Q 9A J2 拼接数量
- * @param input
- * @returns
- */
-export const parseCard3Groups = (input: string): string => {
-  const tokens = input.trim().toUpperCase().split('#');
-  let result = '';
-  for (const token of tokens) {
-    if (token.length >= 2) {
-      const card = token.slice(-1); // 最后一位是牌名
-      const countStr = token.slice(0, -1); // 前面是数量
-      const count = parseInt(countStr, 10);
-
-      if (!isNaN(count) && /^[A-Z0-9]$/.test(card)) {
-        result += card.repeat(count);
-        continue;
-      }
-    } else if (token.length === 1 && /^[A-Z0-9]$/.test(token)) {
-      // 单个字符，默认数量为 1
-      result += token;
-      continue;
-    }
-    // fallback：原样添加
-    result += token;
-  }
-  return result;
-};
-
-/**
- * 34567890JQK2A 牌面剩余
- * @param playedCards
- * @returns
- */
-export const calcRemainingRanks = (playedCards: string) => {
-  const allRanks = '34567890JQKA2'.split('');
-  const groups = playedCards.toUpperCase().trim().split('#');
-  const used = new Set<string>();
-  for (const group of groups) {
-    const card = group.slice(-1); // 每组最后一个字符为牌名
-    if (allRanks.includes(card)) {
-      used.add(card);
-    }
-  }
-  // return allRanks.filter(rank => !used.has(rank)).join('');
-  return allRanks.map(rank => (used.has(rank) ? ' ' : rank)).join('');
-};
+import {JobInput} from './t';
 
 /**
  *
@@ -54,6 +8,21 @@ export const buildRandomHexColor = () => {
   return `#${Math.floor(Math.random() * 0xffffff)
     .toString(16)
     .padStart(6, '0')}`;
+};
+/**
+ * Hex -> rgba
+ * @param hex
+ * @param alpha
+ * @returns
+ */
+export const hexToRgba = (hex: string, alpha = 1) => {
+  // 去除 # 号
+  hex = hex.replace('#', '');
+  // 解析 R, G, B
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
 export enum JobStability {
@@ -67,15 +36,15 @@ export enum JobStability {
 
 // 工作稳定程度
 export const JobStabilityOptions = [
-  {label: '政府、事业编', value: JobStability.Government, multiplier: 0.8},
-  {label: '国企、大型企业', value: JobStability.State, multiplier: 0.9},
-  {label: '外企', value: JobStability.Foreign, multiplier: 0.95},
+  {label: '政府、事业编', value: JobStability.Government, multiplier: 0.7},
+  {label: '国企、大型企业', value: JobStability.State, multiplier: 0.85},
+  {label: '外企', value: JobStability.Foreign, multiplier: 0.9},
   {label: '私企', value: JobStability.Private, multiplier: 1.0},
-  {label: '劳务派遣/OD', value: JobStability.Dispatch, multiplier: 1.1},
-  {label: '自由职业', value: JobStability.Freelance, multiplier: 1.1},
+  {label: '劳务派遣/OD', value: JobStability.Dispatch, multiplier: 1.15},
+  {label: '自由职业', value: JobStability.Freelance, multiplier: 1.2},
 ];
 
-enum CityTier {
+export enum CityTier {
   FirstTier,
   NewFirstTier,
   SecondTier,
@@ -87,8 +56,8 @@ enum CityTier {
 
 // 有和代码出入
 export const CityTierOptions = [
-  {label: '一线', value: CityTier.FirstTier, multiplier: 0.8},
-  {label: '新一线', value: CityTier.NewFirstTier, multiplier: 0.9},
+  {label: '一线', value: CityTier.FirstTier, multiplier: 0.9},
+  {label: '新一线', value: CityTier.NewFirstTier, multiplier: 0.95},
   {label: '二线城市', value: CityTier.SecondTier, multiplier: 1.0},
   {label: '三线', value: CityTier.ThirdTier, multiplier: 1.05},
   {label: '四线', value: CityTier.FourthTier, multiplier: 1.1},
@@ -105,11 +74,11 @@ export enum LeaderRelation {
 }
 
 export const LeaderRelationOptions = [
-  {label: '对我不爽', value: LeaderRelation.Unhappy, multiplier: 1.2}, // 风险大，价值低
-  {label: '管理严格', value: LeaderRelation.Strict, multiplier: 1.1}, // 压力较大
+  {label: '对我不爽', value: LeaderRelation.Unhappy, multiplier: 1.25}, // 风险大，价值低
+  {label: '管理严格', value: LeaderRelation.Strict, multiplier: 1.15}, // 压力较大
   {label: '中规中矩', value: LeaderRelation.Neutral, multiplier: 1.0}, // 基准
-  {label: '善解人意', value: LeaderRelation.Kind, multiplier: 0.9}, // 稳定，价值高
-  {label: '我是嫡系', value: LeaderRelation.DirectLine, multiplier: 0.8}, // 非常稳定，价值最高
+  {label: '善解人意', value: LeaderRelation.Kind, multiplier: 0.85}, // 稳定，价值高
+  {label: '我是嫡系', value: LeaderRelation.DirectLine, multiplier: 0.7}, // 非常稳定，价值最高
 ];
 
 export enum ColleagueRelation {
@@ -119,39 +88,11 @@ export enum ColleagueRelation {
   Close = 'close', // 私交甚好
 }
 
-export enum ShuttleService {
-  Unreachable = 'unreachable', // 无法抵达
-  Inconvenient = 'inconvenient', // 班车不便
-  Convenient = 'convenient', // 便利班车
-  Direct = 'direct', // 班车直达
-}
-
-export const ShuttleServiceOptions = [
-  {label: '无法抵达', value: ShuttleService.Unreachable, multiplier: 1.2}, // 不方便，加分低
-  {label: '班车不便', value: ShuttleService.Inconvenient, multiplier: 1.1},
-  {label: '便利班车', value: ShuttleService.Convenient, multiplier: 0.95},
-  {label: '班车直达', value: ShuttleService.Direct, multiplier: 0.9}, // 最便利，加分高
-];
-
-export enum CanteenQuality {
-  Terrible = 'terrible', // 很难吃
-  Average = 'average', // 食堂一般
-  Good = 'good', // 食堂不错
-  Excellent = 'excellent', // 食堂超赞
-}
-
-export const CanteenQualityOptions = [
-  {label: '很难吃', value: CanteenQuality.Terrible, multiplier: 1.2}, // 食堂差，减分
-  {label: '食堂一般', value: CanteenQuality.Average, multiplier: 1.1},
-  {label: '食堂不错', value: CanteenQuality.Good, multiplier: 0.95},
-  {label: '食堂超赞', value: CanteenQuality.Excellent, multiplier: 0.9}, // 食堂好，加分
-];
-
 export const ColleagueRelationOptions = [
   {label: '都是傻逼', value: ColleagueRelation.Toxic, multiplier: 1.2}, // 环境差，风险高
   {label: '萍水相逢', value: ColleagueRelation.Stranger, multiplier: 1.05}, // 没关系，中性偏高
   {label: '和和睦睦', value: ColleagueRelation.Harmonious, multiplier: 1.0}, // 基准
-  {label: '私交甚好', value: ColleagueRelation.Close, multiplier: 0.9}, // 稳定加分
+  {label: '私交甚好', value: ColleagueRelation.Close, multiplier: 0.85}, // 稳定加分
 ];
 
 export enum EducationLevel {
@@ -179,54 +120,84 @@ export const UniversityTypeOptions = [
   {label: '985/211', value: UniversityType.DoubleFirstClass, multiplier: 0.85},
   {label: '一本', value: UniversityType.FirstTier, multiplier: 0.9},
   {label: '二本/三本', value: UniversityType.SecondTier, multiplier: 1.0},
-  {label: '双非/其他', value: UniversityType.Others, multiplier: 1.1},
+  {label: '职业学校及其他', value: UniversityType.Others, multiplier: 1.1},
 ];
 
 export enum WorkEnvironment {
   RemoteFactoryOutdoor = 'remoteFactoryOutdoor', // 偏僻的工厂/工地/户外
-  FactoryOutdoor = 'factoryOutdoor',             // 工厂/工地/户外
-  Normal = 'normal',                             // 普通环境
-  CBD = 'cbd',                                   // CBD
+  FactoryOutdoor = 'factoryOutdoor', // 工厂/工地/户外
+  Normal = 'normal', // 普通环境
+  CBD = 'cbd', // CBD
 }
 
 export const WorkEnvironmentOptions = [
-  { label: '偏僻的工厂/工地/户外', value: WorkEnvironment.RemoteFactoryOutdoor, multiplier: 1.2 },
-  { label: '工厂/工地/户外', value: WorkEnvironment.FactoryOutdoor, multiplier: 1.1 },
-  { label: '普通环境', value: WorkEnvironment.Normal, multiplier: 1.0 },
-  { label: 'CBD', value: WorkEnvironment.CBD, multiplier: 0.9 },
+  {
+    label: '偏僻的工厂/工地/户外',
+    value: WorkEnvironment.RemoteFactoryOutdoor,
+    multiplier: 1.2,
+  },
+  {
+    label: '工厂/工地/户外',
+    value: WorkEnvironment.FactoryOutdoor,
+    multiplier: 1.1,
+  },
+  {label: '普通环境', value: WorkEnvironment.Normal, multiplier: 1.0},
+  {label: 'CBD', value: WorkEnvironment.CBD, multiplier: 0.9},
 ];
 
 export enum WorkExperience {
-  LessThan1 = '<1',      // 不满1年
-  OneToThree = '1-3',    // 1~3年
-  ThreeToFive = '3-5',   // 3~5年
-  FiveToTen = '5-10',    // 5~10年
-  MoreThanTen = '10+',   // 10年以上
+  LessThan1 = '<1', // 不满1年
+  OneToThree = '1-3', // 1~3年
+  ThreeToFive = '3-5', // 3~5年
+  FiveToTen = '5-10', // 5~10年
+  MoreThanTen = '10+', // 10年以上
 }
 
 export const WorkExperienceOptions = [
-  { label: '应届生', value: WorkExperience.LessThan1, multiplier: 1.2 },
-  { label: '1~3年', value: WorkExperience.OneToThree, multiplier: 1.1 },
-  { label: '3~5年', value: WorkExperience.ThreeToFive, multiplier: 1.0 },
-  { label: '5~10年', value: WorkExperience.FiveToTen, multiplier: 0.9 },
-  { label: '10年以上', value: WorkExperience.MoreThanTen, multiplier: 0.8 },
+  {label: '应届生', value: WorkExperience.LessThan1, multiplier: 1.2},
+  {label: '1~3年', value: WorkExperience.OneToThree, multiplier: 1.1},
+  {label: '3~5年', value: WorkExperience.ThreeToFive, multiplier: 1.0},
+  {label: '5~10年', value: WorkExperience.FiveToTen, multiplier: 0.9},
+  {label: '10年以上', value: WorkExperience.MoreThanTen, multiplier: 0.85},
 ];
 
-/**
- * Hex -> rgba
- * @param hex
- * @param alpha
- * @returns
- */
-export const hexToRgba = (hex: string, alpha = 1) => {
-  // 去除 # 号
-  hex = hex.replace('#', '');
-  // 解析 R, G, B
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
+export enum Tips {
+  WFH = 'Work From Home（前面天的时间，有几天是居家办公）',
+  HoursOfDay = '“下班打卡时间 - 上班打卡时间”的总时间，包含吃饭、午休、加班（不包含通勤）',
+  BusOfDay = '上下班往返公司的总时间（家到公司时间 + 公司到家的时间）',
+}
+
+export enum ShuttleService {
+  Unreachable = 'unreachable', // 无法抵达
+  Inconvenient = 'inconvenient', // 班车不便
+  Convenient = 'convenient', // 便利班车
+  Direct = 'direct', // 班车直达
+}
+
+export const ShuttleServiceOptions = [
+  {
+    label: '没有或者无法抵达',
+    value: ShuttleService.Unreachable,
+    multiplier: 1.2,
+  }, // 不方便，加分低
+  {label: '班车不便', value: ShuttleService.Inconvenient, multiplier: 1.1},
+  {label: '便利班车', value: ShuttleService.Convenient, multiplier: 0.95},
+  {label: '班车直达', value: ShuttleService.Direct, multiplier: 0.9}, // 最便利，加分高
+];
+
+export enum CanteenQuality {
+  Terrible = 'terrible', // 很难吃
+  Average = 'average', // 食堂一般
+  Good = 'good', // 食堂不错
+  Excellent = 'excellent', // 食堂超赞
+}
+
+export const CanteenQualityOptions = [
+  {label: '没有或者很难吃', value: CanteenQuality.Terrible, multiplier: 1.2}, // 食堂差，减分
+  {label: '食堂一般', value: CanteenQuality.Average, multiplier: 1.1},
+  {label: '食堂不错', value: CanteenQuality.Good, multiplier: 0.95},
+  {label: '食堂超赞', value: CanteenQuality.Excellent, multiplier: 0.9}, // 食堂好，加分
+];
 
 export interface CountryInfo {
   name: string; // 国家中文名
@@ -341,3 +312,90 @@ export const Countries: Record<string, CountryInfo> = {
   ZA: {name: '南非', pppFactor: 6.93, currencySymbol: 'R'},
   ZW: {name: '津巴布韦', pppFactor: 24.98, currencySymbol: 'Z$'},
 };
+
+// 表情函数
+export function getJobEmoji(normalizedScore: number): string {
+  if (normalizedScore >= 0.9) return '🤩';
+  if (normalizedScore >= 0.8) return '😍';
+  if (normalizedScore >= 0.7) return '😊';
+  if (normalizedScore >= 0.5) return '🙂';
+  if (normalizedScore >= 0.4) return '😐';
+  if (normalizedScore >= 0.2) return '😕';
+  return '😣';
+}
+
+// 原始 score 计算函数（所有因素）
+function calculateRawScore(job: JobInput): number {
+  const jobStabilityMultiplier =
+    JobStabilityOptions.find(o => o.value === job.jobStability)?.multiplier ??
+    1;
+  const cityMultiplier =
+    CityTierOptions.find(o => o.value === job.city)?.multiplier ?? 1;
+  const leaderMultiplier =
+    LeaderRelationOptions.find(o => o.value === job.leader)?.multiplier ?? 1;
+  const colleagueMultiplier =
+    ColleagueRelationOptions.find(o => o.value === job.colleague)?.multiplier ??
+    1;
+  const environmentMultiplier =
+    WorkEnvironmentOptions.find(o => o.value === job.environment)?.multiplier ??
+    1;
+  const shuttleMultiplier =
+    ShuttleServiceOptions.find(o => o.value === job.shuttle)?.multiplier ?? 1;
+  const canteenMultiplier =
+    CanteenQualityOptions.find(o => o.value === job.canteen)?.multiplier ?? 1;
+  const hometownMultiplier = job.isHometown ? 0.95 : 1.0;
+
+  const dailyHours = Number(job.dailyHours) || 8;
+  const commuteHoursPerDay = Number(job.commuteHoursPerDay) || 0;
+  const slackingHoursPerDay = Number(job.slackingHoursPerDay) || 1;
+  const weeklyDays = Number(job.weeklyDays) || 5;
+
+  const totalLeaveDays =
+    Number(job.leaveDays) +
+    Number(job.sickLeave) +
+    Number(job.publicHolidays) +
+    Number(job.companyAnnualLeave);
+
+  const salary = (Number(job.salary) || 0) * 1000; // K 转数字
+  const pppFactor = Countries[job.country]?.pppFactor ?? 1;
+  const adjustedSalary = salary * pppFactor;
+
+  // 每日有效工作时间 = 总工时 - 摸鱼时间
+  const effectiveDailyHours = dailyHours - slackingHoursPerDay;
+
+  // 年有效工作小时
+  const annualEffectiveHours =
+    (effectiveDailyHours + commuteHoursPerDay * 2) * weeklyDays * 52 -
+    totalLeaveDays * dailyHours;
+
+  const safeAnnualHours = annualEffectiveHours > 0 ? annualEffectiveHours : 1;
+
+  // 核心 score
+  const rawScore =
+    (adjustedSalary / safeAnnualHours) *
+    jobStabilityMultiplier *
+    cityMultiplier *
+    leaderMultiplier *
+    colleagueMultiplier *
+    environmentMultiplier *
+    shuttleMultiplier *
+    canteenMultiplier *
+    hometownMultiplier;
+
+  return rawScore;
+}
+
+// 批量归一化函数
+export function normalizeJobScores(
+  jobs: JobInput[],
+): {job: JobInput; score: number}[] {
+  const rawScores = jobs.map(j => calculateRawScore(j));
+  const minScore = Math.min(...rawScores);
+  const maxScore = Math.max(...rawScores);
+
+  return jobs.map((job, index) => {
+    let normalizedScore = (rawScores[index] - minScore) / (maxScore - minScore);
+    normalizedScore = Math.min(Math.max(normalizedScore, 0), 1);
+    return {job, score: normalizedScore};
+  });
+}

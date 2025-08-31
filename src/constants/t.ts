@@ -1,3 +1,16 @@
+import {
+  CanteenQuality,
+  CityTier,
+  ColleagueRelation,
+  EducationLevel,
+  JobStability,
+  LeaderRelation,
+  ShuttleService,
+  UniversityType,
+  WorkEnvironment,
+  WorkExperience,
+} from './c';
+
 export interface BaohuangPlayer {
   id: number;
   name: string;
@@ -26,32 +39,29 @@ export interface KeyValue {
 }
 
 // 定义表单数据接口
-export interface WorthForm {
-  salary: string;
-  countryCode: string;
-  workDaysPerWeek: string;
-  wfhDaysPerWeek: string;
-  annualLeave: string;
-  paidSickLeave: string;
-  publicHolidays: string;
-  workHours: string;
-  commuteHours: string;
-  restTime: string;
-  cityFactor: string;
-  workEnvironment: string;
-  leadership: string;
-  teamwork: string;
-  homeTown: string;
-  degreeType: string;
-  schoolType: string;
-  bachelorType: string;
-  workYears: string;
-  shuttle: string;
-  canteen: string;
-  jobStability: string;
-  education: string;
-  hasShuttle: boolean;
-  hasCanteen: boolean;
+export interface JobInput {
+  jobStability: JobStability; // 工作稳定性
+  city: CityTier; // 城市等级
+  isHometown: boolean;
+  leader: LeaderRelation; // 领导关系
+  colleague: ColleagueRelation; // 同事关系
+  education: EducationLevel; // 学历
+  university: UniversityType; // 学校类型
+  environment: WorkEnvironment; // 工作环境
+  experience: WorkExperience; // 工作年限
+  salary: string; // 年薪
+  country: string; // 国家代码 CN
+  dailyHours: string; // 日总工时（含通勤）
+  commuteHoursPerDay: string; // 单程通勤时间（小时，整数）
+  slackingHoursPerDay: string; // 每天平均摸鱼时间（小时，整数）
+  leaveDays: string; // 年假 + 带薪病假天数
+  weeklyDays: string; // 每周工作天数（1~7）
+  weeklyWFH: string; // 每周 WFH 天数（0~weeklyDays）
+  sickLeave: string; // 带薪病假天数
+  publicHolidays: string; // 国家法定节假日（一般默认 11 天）
+  companyAnnualLeave: string; // 公司年假（比如默认 5 天）
+  shuttle: ShuttleService; // 班车服务
+  canteen: CanteenQuality; // 食堂质量
 }
 
 // 定义计算结果接口
