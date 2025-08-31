@@ -1,6 +1,6 @@
 import Flex from '@src/components/Flex';
 import ToolBar from '@src/components/ToolBar';
-import {calculateJobValue} from '@src/constants/c';
+import {} from '@src/constants/c';
 import {useCaches} from '@src/constants/store';
 import React, {useMemo} from 'react';
 import {
@@ -27,9 +27,6 @@ const WorthReport: React.FC<MyProps> = props => {
   const {games, theme, freeUsed, formData} = useCaches();
   const {navigation} = props;
   const state = useCaches();
-  const score = useMemo(() => {
-    return calculateJobValue(formData);
-  }, [formData]);
 
   return (
     <View style={{flex: 1}}>
@@ -42,9 +39,6 @@ const WorthReport: React.FC<MyProps> = props => {
       />
       <ScrollView style={{paddingHorizontal: 12}}>
         <View style={styles.card}>
-          <Flex>
-            <Text>{score}</Text>
-          </Flex>
         </View>
       </ScrollView>
     </View>

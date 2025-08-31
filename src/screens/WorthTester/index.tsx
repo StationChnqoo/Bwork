@@ -2,14 +2,18 @@ import Flex from '@src/components/Flex';
 import MoreButton from '@src/components/MoreButton';
 import Stepper from '@src/components/Stepper';
 import {
-  calculateJobValue,
+  calcEducationFactor,
+  CanteenQuality,
   CanteenQualityOptions,
   CityTierOptions,
   ColleagueRelationOptions,
   Countries,
   EducationLevelOptions,
+  getMultiplierInOptions,
+  JobStability,
   JobStabilityOptions,
   LeaderRelationOptions,
+  ShuttleService,
   ShuttleServiceOptions,
   Tips,
   UniversityTypeOptions,
@@ -83,10 +87,6 @@ const WorkthTester: React.FC<MyProps> = props => {
     Alert.alert(title, message, [{text: '好的', onPress: () => {}}]);
   };
 
-  const score = useMemo(() => {
-    return calculateJobValue(formData);
-  }, [formData]);
-
   const calculateWorkingDays = useCallback(() => {
     const weeksPerYear = 52;
     const totalWorkDays = weeksPerYear * Number(formData.weeklyDays); // 确保转换为数字
@@ -102,7 +102,7 @@ const WorkthTester: React.FC<MyProps> = props => {
     formData.sickLeave,
   ]);
 
-  const calculateDailySalary = useCallback(() => {
+  const calculateDailySalary = useMemo(() => {
     if (!formData.salary) return 0;
     const workingDays = calculateWorkingDays();
 
@@ -113,21 +113,117 @@ const WorkthTester: React.FC<MyProps> = props => {
       ? Countries[formData.country].pppFactor || 4.19
       : 4.19;
     const standardizedSalary = Number(formData.salary) * (4.19 / pppFactor);
-    return standardizedSalary / workingDays; // 除 0 不管, Infinity(爽到爆炸)!
-  }, [formData.salary, formData.country, calculateWorkingDays]);
+    return standardizedSalary / workingDays;
+  }, [formData]);
 
-  // 新增：获取显示用的日薪（转回原始货币）
-  const getDisplaySalary = useCallback(() => {
-    const dailySalaryInCNY = calculateDailySalary();
-    const isNonChina = formData.country !== 'CN';
-    if (isNonChina) {
-      // 非中国地区，转回本地货币
-      const pppFactor = Countries[formData.country].pppFactor || 4.19;
-      return ((dailySalaryInCNY * pppFactor) / 4.19).toFixed(2);
+  const score = useMemo(() => {
+    if (!formData.salary) return 0;
+    const dailySalary = calculateDailySalary;
+    const workHours = Number(formData.dailyHours);
+    const commuteHours = Number(formData.commuteHoursPerDay);
+    const restTime = Number(formData.slackingHoursPerDay);
+
+    // 确保正确转换为数字，使用parseFloat可以更可靠地处理字符串转数字
+    const workDaysPerWeek = parseFloat(formData.weeklyDays) || 5;
+
+    // 允许wfhDaysPerWeek为空字符串，计算时才处理为0
+    const wfhInput = formData.weeklyWFH.trim();
+    const wfhDaysPerWeek =
+      wfhInput === ''
+        ? 0
+        : Math.min(parseFloat(wfhInput) || 0, workDaysPerWeek);
+
+    // 确保有办公室工作天数时才计算比例，否则设为0
+    const officeDaysRatio =
+      workDaysPerWeek > 0
+        ? (workDaysPerWeek - wfhDaysPerWeek) / workDaysPerWeek
+        : 0;
+
+    // 班车系数只在勾选时使用，否则为1.0
+    const shuttleFactor = getMultiplierInOptions(
+      ShuttleServiceOptions,
+      formData.shuttle,
+    );
+    const effectiveCommuteHours =
+      commuteHours * officeDaysRatio * shuttleFactor;
+
+    // 食堂系数只在勾选时使用，否则为1.0
+    const canteenFactor = getMultiplierInOptions(
+      CanteenQualityOptions,
+      formData.canteen,
+    );
+
+    // 工作环境因素，包含食堂和家乡因素
+    const environmentFactor =
+      getMultiplierInOptions(WorkEnvironmentOptions, formData.environment) *
+      getMultiplierInOptions(LeaderRelationOptions, formData.leader) *
+      getMultiplierInOptions(ColleagueRelationOptions, formData.colleague) *
+      getMultiplierInOptions(CityTierOptions, `${formData.city}`) *
+      canteenFactor;
+
+    // 根据工作年限计算经验薪资倍数
+    const workYears = Number(formData.experience);
+    let experienceSalaryMultiplier = 1.0;
+
+    if (workYears === 0) {
+      // 应届生：直接根据工作类型设定初始调整系数，反映稳定性/风险价值
+      // 注意：这些系数在分母中，系数越小，最终价值越高
+      if (formData.jobStability === JobStability.Government) {
+        experienceSalaryMultiplier = 0.8; // 体制内稳定性高，价值相对高
+      } else if (formData.jobStability === JobStability.State) {
+        experienceSalaryMultiplier = 0.9; // 央/国企较稳定，价值相对高
+      } else if (formData.jobStability === JobStability.Foreign) {
+        experienceSalaryMultiplier = 0.95; // 外企，较为稳定
+      } else if (formData.jobStability === JobStability.Private) {
+        experienceSalaryMultiplier = 1.0; // 私企作为基准
+      } else if (formData.jobStability === JobStability.Dispatch) {
+        experienceSalaryMultiplier = 1.1; // 派遣社员风险高，价值相对低
+      } else if (formData.jobStability === JobStability.Freelance) {
+        experienceSalaryMultiplier = 1.1; // 自由职业风险高，价值相对低
+      }
     } else {
-      return dailySalaryInCNY.toFixed(2);
+      // 非应届生：使用基于增长预期的模型
+      // 基准薪资增长曲线（适用于私企）
+      let baseSalaryMultiplier = 1.0;
+      baseSalaryMultiplier = getMultiplierInOptions(
+        WorkExperienceOptions,
+        formData.experience,
+      );
+
+      // 工作单位类型对涨薪幅度的影响系数
+      let salaryGrowthFactor = 1.0; // 私企基准
+      if (formData.jobStability === JobStability.Foreign) {
+        salaryGrowthFactor = 0.8; // 外企涨薪幅度为私企的80%
+      } else if (formData.jobStability === JobStability.State) {
+        salaryGrowthFactor = 0.4; // 央/国企涨薪幅度为私企的40%
+      } else if (formData.jobStability === JobStability.Government) {
+        salaryGrowthFactor = 0.2; // 体制内涨薪幅度为私企的20%
+      } else if (formData.jobStability === JobStability.Dispatch) {
+        salaryGrowthFactor = 1.2; // 派遣社员涨薪幅度为私企的120%（体现不稳定性）
+      } else if (formData.jobStability === JobStability.Freelance) {
+        salaryGrowthFactor = 1.2; // 自由职业涨薪幅度为私企的120%（体现不稳定性）
+      }
+
+      // 根据公式: 1 + (对应幅度-1) * 工作单位系数，计算最终薪资倍数
+      experienceSalaryMultiplier =
+        1 + (baseSalaryMultiplier - 1) * salaryGrowthFactor;
     }
-  }, [calculateDailySalary, formData.country]);
+
+    // 薪资满意度应该受到经验薪资倍数的影响
+    // 相同薪资，对于高经验者来说价值更低，对应的计算公式需要考虑经验倍数
+    let education = calcEducationFactor(
+      formData.education,
+      formData.university,
+    );
+
+    return (
+      (dailySalary * environmentFactor) /
+      (35 *
+        (workHours + effectiveCommuteHours - 0.5 * restTime) *
+        Number(education) *
+        experienceSalaryMultiplier)
+    );
+  }, [formData]);
 
   return (
     <View style={styles.container}>
@@ -159,6 +255,66 @@ const WorkthTester: React.FC<MyProps> = props => {
               }`}</Text>
               <MoreButton label={''} onPress={() => {}} />
             </View>
+          </View>
+          <View style={{height: 12}} />
+          <View style={styles.card}>
+            <Text style={styles.groupTitle}>学历</Text>
+            <View style={{height: 10}} />
+            <Text style={{color: '#333', fontSize: 14}}>学位类型</Text>
+            <View style={{height: 10}} />
+            <Tags
+              datas={EducationLevelOptions}
+              onPress={s => {
+                updateForm('education', s.value);
+              }}
+              current={formData.education}
+            />
+            <View style={{height: 10}} />
+            <Text style={{color: '#333', fontSize: 14}}>学校类型</Text>
+            <View style={{height: 10}} />
+            <Tags
+              datas={UniversityTypeOptions}
+              onPress={s => {
+                updateForm('university', s.value);
+              }}
+              current={formData.university}
+            />
+          </View>
+          <View style={{height: 12}} />
+          <View style={styles.card}>
+            <Text style={styles.groupTitle}>工作年限</Text>
+            <View style={{height: 10}} />
+            <Tags
+              datas={WorkExperienceOptions}
+              onPress={s => {
+                updateForm('experience', s.value);
+              }}
+              current={formData.experience}
+            />
+          </View>
+          <View style={{height: 12}} />
+          <View style={styles.card}>
+            <Text style={styles.groupTitle}>所在城市（按生活成本选择）</Text>
+            <View style={{height: 10}} />
+            <Tags
+              datas={CityTierOptions}
+              onPress={s => {
+                updateForm('city', s.value);
+              }}
+              current={formData.city}
+            />
+            <View style={{height: 10}} />
+            <Flex justify={'space-between'} horizontal>
+              <Text style={{color: '#333', fontSize: 14}}>是否在家乡</Text>
+              <Switch
+                value={formData.isHometown}
+                onValueChange={value => {
+                  updateForm('isHometown', !formData.isHometown);
+                }}
+                trackColor={{false: '#ccc', true: theme}}
+                thumbColor={formData.isHometown ? '#fff' : '#f4f3f4'}
+              />
+            </Flex>
           </View>
           <View style={{height: 12}} />
           <View style={styles.card}>
@@ -301,31 +457,7 @@ const WorkthTester: React.FC<MyProps> = props => {
           </View>
           <View style={{height: 12}} />
           <View style={styles.card}>
-            <Text style={styles.groupTitle}>学历</Text>
-            <View style={{height: 10}} />
-            <Text style={{color: '#333', fontSize: 14}}>学位类型</Text>
-            <View style={{height: 10}} />
-            <Tags
-              datas={EducationLevelOptions}
-              onPress={s => {
-                updateForm('education', s.value);
-              }}
-              current={formData.education}
-            />
-            <View style={{height: 10}} />
-            <Text style={{color: '#333', fontSize: 14}}>学校类型</Text>
-            <View style={{height: 10}} />
-            <Tags
-              datas={UniversityTypeOptions}
-              onPress={s => {
-                updateForm('university', s.value);
-              }}
-              current={formData.university}
-            />
-          </View>
-          <View style={{height: 12}} />
-          <View style={styles.card}>
-            <Text style={styles.groupTitle}>领导/老板</Text>
+            <Text style={styles.groupTitle}>老板上级</Text>
             <View style={{height: 10}} />
             <Tags
               datas={LeaderRelationOptions}
@@ -337,43 +469,7 @@ const WorkthTester: React.FC<MyProps> = props => {
           </View>
           <View style={{height: 12}} />
           <View style={styles.card}>
-            <Text style={styles.groupTitle}>所在城市（按生活成本选择）</Text>
-            <View style={{height: 10}} />
-            <Tags
-              datas={CityTierOptions}
-              onPress={s => {
-                updateForm('city', s.value);
-              }}
-              current={formData.city}
-            />
-            <View style={{height: 10}} />
-            <Flex justify={'space-between'} horizontal>
-              <Text style={{color: '#333', fontSize: 14}}>是否在家乡</Text>
-              <Switch
-                value={formData.isHometown}
-                onValueChange={value => {
-                  updateForm('isHometown', !formData.isHometown);
-                }}
-                trackColor={{false: '#ccc', true: theme}}
-                thumbColor={formData.isHometown ? '#fff' : '#f4f3f4'}
-              />
-            </Flex>
-          </View>
-          <View style={{height: 12}} />
-          <View style={styles.card}>
-            <Text style={styles.groupTitle}>工作年限</Text>
-            <View style={{height: 10}} />
-            <Tags
-              datas={WorkExperienceOptions}
-              onPress={s => {
-                updateForm('experience', s.value);
-              }}
-              current={formData.experience}
-            />
-          </View>
-          <View style={{height: 12}} />
-          <View style={styles.card}>
-            <Text style={styles.groupTitle}>同事环境</Text>
+            <Text style={styles.groupTitle}>同事关系</Text>
             <View style={{height: 10}} />
             <Tags
               datas={ColleagueRelationOptions}
@@ -411,8 +507,8 @@ const WorkthTester: React.FC<MyProps> = props => {
         <View style={{height: 16}} />
       </ScrollView>
       <BottomBar
-        score={0}
-        dailySalary={calculateDailySalary()}
+        score={score}
+        dailySalary={calculateDailySalary}
         onPress={() => {
           navigation.navigate('WorthReport');
         }}

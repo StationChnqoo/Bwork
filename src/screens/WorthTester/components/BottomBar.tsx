@@ -16,13 +16,13 @@ const BottomBar: React.FC<MyProps> = props => {
     <View style={styles.views}>
       <Flex horizontal justify={'space-between'}>
         <Flex horizontal>
-          <Flex>
+          <Flex align={'flex-start'}>
             <Text style={{color: theme, fontSize: 20}}>{score.toFixed(3)}</Text>
             <View style={{height: 4}} />
             <Text style={{color: '#999', fontSize: 12}}>工作性价比</Text>
           </Flex>
           <View style={{width: 10}} />
-          <Flex>
+          <Flex align={'flex-start'}>
             <Text style={{color: theme, fontSize: 20}}>
               {dailySalary.toFixed(2)}
             </Text>

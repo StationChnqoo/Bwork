@@ -1,5 +1,3 @@
-import {JobInput} from './t';
-
 /**
  *
  * @returns
@@ -36,12 +34,12 @@ export enum JobStability {
 
 // 工作稳定程度
 export const JobStabilityOptions = [
-  {label: '政府、事业编', value: JobStability.Government, multiplier: 0.7},
-  {label: '国企、大型企业', value: JobStability.State, multiplier: 0.85},
-  {label: '外企', value: JobStability.Foreign, multiplier: 0.9},
-  {label: '私企', value: JobStability.Private, multiplier: 1.0},
-  {label: '劳务派遣/OD', value: JobStability.Dispatch, multiplier: 1.15},
-  {label: '自由职业', value: JobStability.Freelance, multiplier: 1.2},
+  {label: '政府、事业编', value: JobStability.Government},
+  {label: '国企、大型企业', value: JobStability.State},
+  {label: '外企', value: JobStability.Foreign},
+  {label: '私企', value: JobStability.Private},
+  {label: '劳务派遣/OD', value: JobStability.Dispatch},
+  {label: '自由职业', value: JobStability.Freelance},
 ];
 
 export enum CityTier {
@@ -74,11 +72,11 @@ export enum LeaderRelation {
 }
 
 export const LeaderRelationOptions = [
-  {label: '对我不爽', value: LeaderRelation.Unhappy, multiplier: 1.25}, // 风险大，价值低
-  {label: '管理严格', value: LeaderRelation.Strict, multiplier: 1.15}, // 压力较大
+  {label: '对我不爽', value: LeaderRelation.Unhappy, multiplier: 0.7}, // 风险大，价值低
+  {label: '管理严格', value: LeaderRelation.Strict, multiplier: 0.9}, // 压力较大
   {label: '中规中矩', value: LeaderRelation.Neutral, multiplier: 1.0}, // 基准
-  {label: '善解人意', value: LeaderRelation.Kind, multiplier: 0.85}, // 稳定，价值高
-  {label: '我是嫡系', value: LeaderRelation.DirectLine, multiplier: 0.7}, // 非常稳定，价值最高
+  {label: '善解人意', value: LeaderRelation.Kind, multiplier: 1.1}, // 稳定，价值高
+  {label: '我是嫡系', value: LeaderRelation.DirectLine, multiplier: 1.3}, // 非常稳定，价值最高
 ];
 
 export enum ColleagueRelation {
@@ -89,10 +87,10 @@ export enum ColleagueRelation {
 }
 
 export const ColleagueRelationOptions = [
-  {label: '都是傻逼', value: ColleagueRelation.Toxic, multiplier: 1.2}, // 环境差，风险高
-  {label: '萍水相逢', value: ColleagueRelation.Stranger, multiplier: 1.05}, // 没关系，中性偏高
-  {label: '和和睦睦', value: ColleagueRelation.Harmonious, multiplier: 1.0}, // 基准
-  {label: '私交甚好', value: ColleagueRelation.Close, multiplier: 0.85}, // 稳定加分
+  {label: '都是傻逼', value: ColleagueRelation.Toxic, multiplier: 0.9}, // 环境差，风险高
+  {label: '萍水相逢', value: ColleagueRelation.Stranger, multiplier: 1.0}, // 没关系，中性偏高
+  {label: '和和睦睦', value: ColleagueRelation.Harmonious, multiplier: 1.1}, // 基准
+  {label: '私交甚好', value: ColleagueRelation.Close, multiplier: 1.2}, // 稳定加分
 ];
 
 export enum EducationLevel {
@@ -102,25 +100,45 @@ export enum EducationLevel {
   Doctor = 'doctor', // 博士
 }
 
+export const calcEducationFactor = (el: EducationLevel, ut: UniversityType) => {
+  let factor = 1.0;
+  let benke = getMultiplierInOptions(UniversityTypeOptions, ut);
+  switch (el) {
+    case EducationLevel.DiplomaOrBelow:
+      factor = 0.8;
+      break;
+    case EducationLevel.Bachelor:
+      factor = benke;
+      break;
+    case EducationLevel.Doctor:
+      factor = benke + 0.5;
+      break;
+    case EducationLevel.Master:
+      factor = benke + 1;
+      break;
+    default:
+      break;
+  }
+  return factor;
+};
+
 export const EducationLevelOptions = [
-  {label: '专科及以下', value: EducationLevel.DiplomaOrBelow, multiplier: 1.1}, // 学历低，加分低
-  {label: '本科', value: EducationLevel.Bachelor, multiplier: 1.0}, // 本科基准
-  {label: '硕士', value: EducationLevel.Master, multiplier: 0.9}, // 高学历，加分高
-  {label: '博士', value: EducationLevel.Doctor, multiplier: 0.85}, // 最高学历，加分最高
+  {label: '专科及以下', value: EducationLevel.DiplomaOrBelow}, // 学历低，加分低
+  {label: '本科', value: EducationLevel.Bachelor}, // 本科基准
+  {label: '硕士', value: EducationLevel.Master}, // 高学历，加分高
+  {label: '博士', value: EducationLevel.Doctor}, // 最高学历，加分最高
 ];
 
 export enum UniversityType {
-  DoubleFirstClass = 'doubleFirstClass', // 985/211
-  FirstTier = 'firstTier', // 一本
-  SecondTier = 'secondTier', // 二本/三本
-  Others = 'others', // 双非或其他
+  _985_211 = '_985_211', // 985/211
+  _1 = '_1', // 一本
+  _23 = '_23', // 二本/三本
 }
 
 export const UniversityTypeOptions = [
-  {label: '985/211', value: UniversityType.DoubleFirstClass, multiplier: 0.85},
-  {label: '一本', value: UniversityType.FirstTier, multiplier: 0.9},
-  {label: '二本/三本', value: UniversityType.SecondTier, multiplier: 1.0},
-  {label: '职业学校及其他', value: UniversityType.Others, multiplier: 1.1},
+  {label: '985、211', value: UniversityType._985_211, multiplier: 1.2},
+  {label: '双非', value: UniversityType._1, multiplier: 1.0},
+  {label: '二本、三本', value: UniversityType._23, multiplier: 0.9},
 ];
 
 export enum WorkEnvironment {
@@ -134,31 +152,31 @@ export const WorkEnvironmentOptions = [
   {
     label: '偏僻的工厂/工地/户外',
     value: WorkEnvironment.RemoteFactoryOutdoor,
-    multiplier: 1.2,
+    multiplier: 0.8,
   },
   {
     label: '工厂/工地/户外',
     value: WorkEnvironment.FactoryOutdoor,
-    multiplier: 1.1,
+    multiplier: 0.9,
   },
   {label: '普通环境', value: WorkEnvironment.Normal, multiplier: 1.0},
-  {label: 'CBD', value: WorkEnvironment.CBD, multiplier: 0.9},
+  {label: 'CBD', value: WorkEnvironment.CBD, multiplier: 1.1},
 ];
 
 export enum WorkExperience {
-  LessThan1 = '<1', // 不满1年
-  OneToThree = '1-3', // 1~3年
-  ThreeToFive = '3-5', // 3~5年
-  FiveToTen = '5-10', // 5~10年
-  MoreThanTen = '10+', // 10年以上
+  LessThan1 = '1', // 不满1年
+  OneTo3 = '1-3', // 1~3年
+  ThreeTo5 = '3-5', // 3~5年
+  FiveTo10 = '5-10', // 5~10年
+  MoreThan10 = '>10',
 }
 
 export const WorkExperienceOptions = [
-  {label: '应届生', value: WorkExperience.LessThan1, multiplier: 1.2},
-  {label: '1~3年', value: WorkExperience.OneToThree, multiplier: 1.1},
-  {label: '3~5年', value: WorkExperience.ThreeToFive, multiplier: 1.0},
-  {label: '5~10年', value: WorkExperience.FiveToTen, multiplier: 0.9},
-  {label: '10年以上', value: WorkExperience.MoreThanTen, multiplier: 0.85},
+  {label: '应届生', value: WorkExperience.LessThan1, multiplier: 1.5},
+  {label: '1~3年', value: WorkExperience.OneTo3, multiplier: 2.25},
+  {label: '3~5年', value: WorkExperience.ThreeTo5, multiplier: 2.75},
+  {label: '5~10年', value: WorkExperience.FiveTo10, multiplier: 3.25},
+  {label: '10年以上', value: WorkExperience.MoreThan10, multiplier: 3.75},
 ];
 
 export enum Tips {
@@ -168,6 +186,7 @@ export enum Tips {
 }
 
 export enum ShuttleService {
+  None = 'none',
   Unreachable = 'unreachable', // 无法抵达
   Inconvenient = 'inconvenient', // 班车不便
   Convenient = 'convenient', // 便利班车
@@ -176,13 +195,13 @@ export enum ShuttleService {
 
 export const ShuttleServiceOptions = [
   {
-    label: '没有或者无法抵达',
+    label: '没有或跟本无法抵达',
     value: ShuttleService.Unreachable,
-    multiplier: 1.2,
+    multiplier: 1.0,
   }, // 不方便，加分低
-  {label: '班车不便', value: ShuttleService.Inconvenient, multiplier: 1.1},
-  {label: '便利班车', value: ShuttleService.Convenient, multiplier: 0.95},
-  {label: '班车直达', value: ShuttleService.Direct, multiplier: 0.9}, // 最便利，加分高
+  {label: '班车不便', value: ShuttleService.Inconvenient, multiplier: 0.9},
+  {label: '便利班车', value: ShuttleService.Convenient, multiplier: 0.7},
+  {label: '班车直达', value: ShuttleService.Direct, multiplier: 0.4}, // 最便利，加分高
 ];
 
 export enum CanteenQuality {
@@ -193,10 +212,10 @@ export enum CanteenQuality {
 }
 
 export const CanteenQualityOptions = [
-  {label: '没有或者很难吃', value: CanteenQuality.Terrible, multiplier: 1.2}, // 食堂差，减分
-  {label: '食堂一般', value: CanteenQuality.Average, multiplier: 1.1},
-  {label: '食堂不错', value: CanteenQuality.Good, multiplier: 0.95},
-  {label: '食堂超赞', value: CanteenQuality.Excellent, multiplier: 0.9}, // 食堂好，加分
+  {label: '没有或者很难吃', value: CanteenQuality.Terrible, multiplier: 1.0}, // 食堂差，减分
+  {label: '食堂一般', value: CanteenQuality.Average, multiplier: 1.05},
+  {label: '食堂不错', value: CanteenQuality.Good, multiplier: 1.1},
+  {label: '食堂超赞', value: CanteenQuality.Excellent, multiplier: 1.15}, // 食堂好，加分
 ];
 
 export interface CountryInfo {
@@ -313,75 +332,6 @@ export const Countries: Record<string, CountryInfo> = {
   ZW: {name: '津巴布韦', pppFactor: 24.98, currencySymbol: 'Z$'},
 };
 
-export function calculateJobValue(job: JobInput): number {
-  if (!job.salary) return 0;
-
-  // --- 工作日计算 ---
-  const weeksPerYear = 52;
-  const weeklyDays = Number(job.weeklyDays) || 5;
-  const wfhDays = Number(job.weeklyWFH) || 0;
-  const officeRatio = (weeklyDays - wfhDays) / weeklyDays;
-
-  const totalWorkDays = weeksPerYear * weeklyDays;
-  const totalLeaves =
-    Number(job.companyAnnualLeave || 0) +
-    Number(job.publicHolidays || 0) +
-    Number(job.sickLeave || 0) * 0.6;
-  const effectiveWorkDays = Math.max(totalWorkDays - totalLeaves, 1); // 避免除0
-
-  // --- 日薪计算，按PPP标准化 ---
-  const salary = Number(job.salary) * 1000; // K → 元
-  const pppFactor = Countries[job.country].pppFactor;
-  const dailySalary = (salary * (4.19 / pppFactor)) / effectiveWorkDays;
-
-  // --- 工时计算 ---
-  const dailyHours = Number(job.dailyHours) || 8;
-  const commute = Number(job.commuteHoursPerDay) * officeRatio;
-  const slacking = Number(job.slackingHoursPerDay) || 0;
-  const effectiveHours = dailyHours + commute - slacking;
-
-  // --- 环境因子，越差分越高 ---
-  const envFactor =
-    (Number(job.environment) || 1) *
-    (Number(job.leader) || 1) *
-    (Number(job.colleague) || 1) *
-    (Number(job.city) || 1) *
-    ((job.isHometown ? 0.9 : 1) * 1); // 家乡略加成
-
-  // --- 学历/经验系数，越低越高 ---
-  const educationFactor = Number(job.education) || 1;
-  const experienceFactor = Number(job.experience) || 1;
-
-  // --- 最终性价比 ---
-  const value =
-    dailySalary /
-    (effectiveHours * envFactor * educationFactor * experienceFactor);
-
-  return value;
-}
-
-// 评分等级和表情
-const ratingLevels = [
-  {min: 1500, emoji: '🤩', desc: '人生巅峰'},
-  {min: 1200, emoji: '😍', desc: '爽到爆炸'},
-  {min: 1000, emoji: '😊', desc: '很爽'},
-  {min: 800, emoji: '🙂', desc: '还不错'},
-  {min: 600, emoji: '😐', desc: '一般'},
-  {min: 400, emoji: '😕', desc: '略惨'},
-  {min: 0, emoji: '😣', desc: '惨绝人寰'},
-];
-
-function getJobRating(score: number) {
-  return ratingLevels.find(r => score >= r.min)!;
-}
-
-// 例：映射表情
-const JobRatings = [
-  {label: '惨绝人寰', emoji: '😣'},
-  {label: '略惨', emoji: '😕'},
-  {label: '一般', emoji: '😐'},
-  {label: '还不错', emoji: '🙂'},
-  {label: '很爽', emoji: '😊'},
-  {label: '爽到爆炸', emoji: '😍'},
-  {label: '人生巅峰', emoji: '🤩'},
-];
+export const getMultiplierInOptions = (list: any[], key: String) => {
+  return list.find(it => it.value == key).multiplier;
+};

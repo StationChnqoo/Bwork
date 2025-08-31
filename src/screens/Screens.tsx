@@ -9,11 +9,7 @@ import {
 
 import * as React from 'react';
 import HelloWorld from './HelloWorld';
-import Baohuang from './Baohuang';
-import Gouji from './Gouji';
 import BottomTabs from './BottomTabs';
-import Games from './Games';
-import GoujiSheet from './GoujiSheet';
 import WorthTester from './WorthTester';
 import WorthReport from './WorthReport';
 
@@ -47,10 +43,6 @@ export default function Stacks() {
         }}>
         <RootStack.Screen name="BottomTabs" component={BottomTabs} />
         <RootStack.Screen name="HelloWorld" component={HelloWorld} />
-        <RootStack.Screen name="Baohuang" component={Baohuang} />
-        <RootStack.Screen name="Gouji" component={Gouji} />
-        <RootStack.Screen name="Games" component={Games} />
-        <RootStack.Screen name="GoujiSheet" component={GoujiSheet} />
         <RootStack.Screen name="WorthTester" component={WorthTester} />
         <RootStack.Screen name="WorthReport" component={WorthReport} />
       </RootStack.Navigator>

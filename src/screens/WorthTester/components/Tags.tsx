@@ -18,7 +18,7 @@ const Tags: React.FC<MyProps> = props => {
         return (
           <TouchableOpacity
             activeOpacity={0.8}
-            key={i}
+            key={`${it.value}: ${i}`}
             style={[styles.tag, checked && {borderColor: theme}]}
             onPress={() => {
               onPress(it);

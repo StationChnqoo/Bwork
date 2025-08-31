@@ -21,7 +21,6 @@ const Stepper: React.FC<MyProps> = props => {
         }}>
         <Text style={{color: '#666', fontSize: 16}}>-</Text>
       </TouchableOpacity>
-
       <TextInput
         style={[styles.input, {width: length * 16}]}
         value={`${value}`}
@@ -47,8 +46,8 @@ const styles = StyleSheet.create({
   views: {
     borderWidth: 1,
     borderRadius: 4,
-    height: 20,
-    width: 20,
+    height: 24,
+    width: 24,
     alignItems: 'center',
     justifyContent: 'center',
     borderColor: '#999',
@@ -56,8 +55,8 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: 4,
-    height: 20,
-    width: 40,
+    height: 24,
+    minWidth: 40,
     margin: 0,
     padding: 0,
     fontSize: 14,

@@ -70,10 +70,10 @@ const initialState = {
     leader: LeaderRelation.Neutral, // 默认中规中矩
     colleague: ColleagueRelation.Harmonious, // 默认和和睦睦
     education: EducationLevel.Bachelor, // 默认本科
-    university: UniversityType.Others, // 默认双非/其他
+    university: UniversityType._23, // 默认双非/其他
     environment: WorkEnvironment.Normal, // 默认普通环境
-    experience: WorkExperience.OneToThree, // 默认 1~3 年
-    salary: '200', // 默认年薪 20w
+    experience: WorkExperience.ThreeTo5, // 默认 1~3 年
+    salary: '36000', // 默认年薪 20w
     country: 'CN', // 中国
     dailyHours: '9', // 日总工时（含通勤）
     commuteHoursPerDay: '1', // 单程通勤 1 小时
