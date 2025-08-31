@@ -15,6 +15,7 @@ import BottomTabs from './BottomTabs';
 import Games from './Games';
 import GoujiSheet from './GoujiSheet';
 import WorthTester from './WorthTester';
+import WorthReport from './WorthReport';
 
 export type RootStacksParams = {
   HelloWorld: {id: string};
@@ -24,6 +25,7 @@ export type RootStacksParams = {
   Games: undefined;
   GoujiSheet: undefined;
   WorthTester: undefined;
+  WorthReport: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStacksParams>();
@@ -50,6 +52,7 @@ export default function Stacks() {
         <RootStack.Screen name="Games" component={Games} />
         <RootStack.Screen name="GoujiSheet" component={GoujiSheet} />
         <RootStack.Screen name="WorthTester" component={WorthTester} />
+        <RootStack.Screen name="WorthReport" component={WorthReport} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

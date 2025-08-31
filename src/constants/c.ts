@@ -313,89 +313,75 @@ export const Countries: Record<string, CountryInfo> = {
   ZW: {name: '津巴布韦', pppFactor: 24.98, currencySymbol: 'Z$'},
 };
 
-// 表情函数
-export function getJobEmoji(normalizedScore: number): string {
-  if (normalizedScore >= 0.9) return '🤩';
-  if (normalizedScore >= 0.8) return '😍';
-  if (normalizedScore >= 0.7) return '😊';
-  if (normalizedScore >= 0.5) return '🙂';
-  if (normalizedScore >= 0.4) return '😐';
-  if (normalizedScore >= 0.2) return '😕';
-  return '😣';
-}
+export function calculateJobValue(job: JobInput): number {
+  if (!job.salary) return 0;
 
-// 原始 score 计算函数（所有因素）
-function calculateRawScore(job: JobInput): number {
-  const jobStabilityMultiplier =
-    JobStabilityOptions.find(o => o.value === job.jobStability)?.multiplier ??
-    1;
-  const cityMultiplier =
-    CityTierOptions.find(o => o.value === job.city)?.multiplier ?? 1;
-  const leaderMultiplier =
-    LeaderRelationOptions.find(o => o.value === job.leader)?.multiplier ?? 1;
-  const colleagueMultiplier =
-    ColleagueRelationOptions.find(o => o.value === job.colleague)?.multiplier ??
-    1;
-  const environmentMultiplier =
-    WorkEnvironmentOptions.find(o => o.value === job.environment)?.multiplier ??
-    1;
-  const shuttleMultiplier =
-    ShuttleServiceOptions.find(o => o.value === job.shuttle)?.multiplier ?? 1;
-  const canteenMultiplier =
-    CanteenQualityOptions.find(o => o.value === job.canteen)?.multiplier ?? 1;
-  const hometownMultiplier = job.isHometown ? 0.95 : 1.0;
-
-  const dailyHours = Number(job.dailyHours) || 8;
-  const commuteHoursPerDay = Number(job.commuteHoursPerDay) || 0;
-  const slackingHoursPerDay = Number(job.slackingHoursPerDay) || 1;
+  // --- 工作日计算 ---
+  const weeksPerYear = 52;
   const weeklyDays = Number(job.weeklyDays) || 5;
+  const wfhDays = Number(job.weeklyWFH) || 0;
+  const officeRatio = (weeklyDays - wfhDays) / weeklyDays;
 
-  const totalLeaveDays =
-    Number(job.leaveDays) +
-    Number(job.sickLeave) +
-    Number(job.publicHolidays) +
-    Number(job.companyAnnualLeave);
+  const totalWorkDays = weeksPerYear * weeklyDays;
+  const totalLeaves =
+    Number(job.companyAnnualLeave || 0) +
+    Number(job.publicHolidays || 0) +
+    Number(job.sickLeave || 0) * 0.6;
+  const effectiveWorkDays = Math.max(totalWorkDays - totalLeaves, 1); // 避免除0
 
-  const salary = (Number(job.salary) || 0) * 1000; // K 转数字
-  const pppFactor = Countries[job.country]?.pppFactor ?? 1;
-  const adjustedSalary = salary * pppFactor;
+  // --- 日薪计算，按PPP标准化 ---
+  const salary = Number(job.salary) * 1000; // K → 元
+  const pppFactor = Countries[job.country].pppFactor;
+  const dailySalary = (salary * (4.19 / pppFactor)) / effectiveWorkDays;
 
-  // 每日有效工作时间 = 总工时 - 摸鱼时间
-  const effectiveDailyHours = dailyHours - slackingHoursPerDay;
+  // --- 工时计算 ---
+  const dailyHours = Number(job.dailyHours) || 8;
+  const commute = Number(job.commuteHoursPerDay) * officeRatio;
+  const slacking = Number(job.slackingHoursPerDay) || 0;
+  const effectiveHours = dailyHours + commute - slacking;
 
-  // 年有效工作小时
-  const annualEffectiveHours =
-    (effectiveDailyHours + commuteHoursPerDay * 2) * weeklyDays * 52 -
-    totalLeaveDays * dailyHours;
+  // --- 环境因子，越差分越高 ---
+  const envFactor =
+    (Number(job.environment) || 1) *
+    (Number(job.leader) || 1) *
+    (Number(job.colleague) || 1) *
+    (Number(job.city) || 1) *
+    ((job.isHometown ? 0.9 : 1) * 1); // 家乡略加成
 
-  const safeAnnualHours = annualEffectiveHours > 0 ? annualEffectiveHours : 1;
+  // --- 学历/经验系数，越低越高 ---
+  const educationFactor = Number(job.education) || 1;
+  const experienceFactor = Number(job.experience) || 1;
 
-  // 核心 score
-  const rawScore =
-    (adjustedSalary / safeAnnualHours) *
-    jobStabilityMultiplier *
-    cityMultiplier *
-    leaderMultiplier *
-    colleagueMultiplier *
-    environmentMultiplier *
-    shuttleMultiplier *
-    canteenMultiplier *
-    hometownMultiplier;
+  // --- 最终性价比 ---
+  const value =
+    dailySalary /
+    (effectiveHours * envFactor * educationFactor * experienceFactor);
 
-  return rawScore;
+  return value;
 }
 
-// 批量归一化函数
-export function normalizeJobScores(
-  jobs: JobInput[],
-): {job: JobInput; score: number}[] {
-  const rawScores = jobs.map(j => calculateRawScore(j));
-  const minScore = Math.min(...rawScores);
-  const maxScore = Math.max(...rawScores);
+// 评分等级和表情
+const ratingLevels = [
+  {min: 1500, emoji: '🤩', desc: '人生巅峰'},
+  {min: 1200, emoji: '😍', desc: '爽到爆炸'},
+  {min: 1000, emoji: '😊', desc: '很爽'},
+  {min: 800, emoji: '🙂', desc: '还不错'},
+  {min: 600, emoji: '😐', desc: '一般'},
+  {min: 400, emoji: '😕', desc: '略惨'},
+  {min: 0, emoji: '😣', desc: '惨绝人寰'},
+];
 
-  return jobs.map((job, index) => {
-    let normalizedScore = (rawScores[index] - minScore) / (maxScore - minScore);
-    normalizedScore = Math.min(Math.max(normalizedScore, 0), 1);
-    return {job, score: normalizedScore};
-  });
+function getJobRating(score: number) {
+  return ratingLevels.find(r => score >= r.min)!;
 }
+
+// 例：映射表情
+const JobRatings = [
+  {label: '惨绝人寰', emoji: '😣'},
+  {label: '略惨', emoji: '😕'},
+  {label: '一般', emoji: '😐'},
+  {label: '还不错', emoji: '🙂'},
+  {label: '很爽', emoji: '😊'},
+  {label: '爽到爆炸', emoji: '😍'},
+  {label: '人生巅峰', emoji: '🤩'},
+];

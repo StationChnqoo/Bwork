@@ -54,7 +54,6 @@ export interface JobInput {
   dailyHours: string; // 日总工时（含通勤）
   commuteHoursPerDay: string; // 单程通勤时间（小时，整数）
   slackingHoursPerDay: string; // 每天平均摸鱼时间（小时，整数）
-  leaveDays: string; // 年假 + 带薪病假天数
   weeklyDays: string; // 每周工作天数（1~7）
   weeklyWFH: string; // 每周 WFH 天数（0~weeklyDays）
   sickLeave: string; // 带薪病假天数

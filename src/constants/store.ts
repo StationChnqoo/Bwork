@@ -78,7 +78,6 @@ const initialState = {
     dailyHours: '9', // 日总工时（含通勤）
     commuteHoursPerDay: '1', // 单程通勤 1 小时
     slackingHoursPerDay: '1', // 每天摸鱼 1 小时
-    leaveDays: '16', // 总休假 = 法定节假日 + 公司年假
     weeklyDays: '5', // 每周工作天数 5
     weeklyWFH: '0', // 每周居家 0 天
     sickLeave: '3', // 带薪病假 3 天

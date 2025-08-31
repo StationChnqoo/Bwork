@@ -4,11 +4,12 @@ import Flex from '../Flex';
 
 interface MyProps {
   value: string;
+  length?: number;
   onChange: (n: string) => void;
 }
 
 const Stepper: React.FC<MyProps> = props => {
-  const {value, onChange} = props;
+  const {value, onChange, length = 2} = props;
   return (
     <Flex horizontal style={{gap: 2}}>
       <TouchableOpacity
@@ -22,7 +23,7 @@ const Stepper: React.FC<MyProps> = props => {
       </TouchableOpacity>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, {width: length * 16}]}
         value={`${value}`}
         keyboardType={'numeric'}
         onChangeText={s => {
@@ -30,7 +31,6 @@ const Stepper: React.FC<MyProps> = props => {
         }}
         underlineColorAndroid={'transparent'}
       />
-
       <TouchableOpacity
         style={styles.views}
         activeOpacity={0.8}
