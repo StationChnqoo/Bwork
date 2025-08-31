@@ -15,13 +15,10 @@ import WorthReport from './WorthReport';
 
 export type RootStacksParams = {
   HelloWorld: {id: string};
-  Baohuang: {id?: string};
-  Gouji: {id?: string};
   BottomTabs: undefined;
-  Games: undefined;
   GoujiSheet: undefined;
   WorthTester: undefined;
-  WorthReport: undefined;
+  WorthReport: {score: number};
 };
 
 const RootStack = createNativeStackNavigator<RootStacksParams>();

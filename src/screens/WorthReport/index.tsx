@@ -1,6 +1,6 @@
 import Flex from '@src/components/Flex';
 import ToolBar from '@src/components/ToolBar';
-import {} from '@src/constants/c';
+import {getScoreLevel} from '@src/constants/c';
 import {useCaches} from '@src/constants/store';
 import React, {useMemo} from 'react';
 import {
@@ -12,10 +12,12 @@ import {
   View,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {RootStacksProp} from '../Screens';
+import {RootStacksParams, RootStacksProp} from '../Screens';
+import {RouteProp} from '@react-navigation/native';
 
 interface MyProps {
   navigation?: RootStacksProp;
+  route?: RouteProp<RootStacksParams, 'WorthReport'>;
 }
 
 const WorthReport: React.FC<MyProps> = props => {
@@ -25,8 +27,9 @@ const WorthReport: React.FC<MyProps> = props => {
   });
 
   const {games, theme, freeUsed, formData} = useCaches();
-  const {navigation} = props;
+  const {navigation, route} = props;
   const state = useCaches();
+  const level = getScoreLevel(route.params.score);
 
   return (
     <View style={{flex: 1}}>
@@ -38,7 +41,20 @@ const WorthReport: React.FC<MyProps> = props => {
         title={'报告'}
       />
       <ScrollView style={{paddingHorizontal: 12}}>
+        <View style={{height: 5}} />
         <View style={styles.card}>
+          <Flex>
+            <Text style={{fontSize: 64}}>{level.emoji}</Text>
+            <Flex horizontal align={'baseline'}>
+              <Text style={{color: level.color, fontSize: 16}}>
+                {level.label}
+              </Text>
+              <View style={{width: 5}} />
+              <Text style={{color: level.color, fontSize: 16}}>
+                {route.params.score.toFixed(3)}分
+              </Text>
+            </Flex>
+          </Flex>
         </View>
       </ScrollView>
     </View>

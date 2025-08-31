@@ -141,6 +141,69 @@ export const UniversityTypeOptions = [
   {label: '二本、三本', value: UniversityType._23, multiplier: 0.9},
 ];
 
+export const ScoreLevels = [
+  {
+    value: 0.5,
+    emoji: '💀',
+    label: '苟延残喘',
+    color: '#4B5563',
+    message: '社畜证书稳拿，再坚持就是奇迹。',
+  },
+  {
+    value: 1,
+    emoji: '🥀',
+    label: '穷途末路',
+    color: '#6B7280',
+    message: '工资一到账就蒸发，生活全靠意志力。',
+  },
+  {
+    value: 1.6,
+    emoji: '😐',
+    label: '得过且过',
+    color: '#9CA3AF',
+    message: '上班如上坟，下班如升天。',
+  },
+  {
+    value: 2.3,
+    emoji: '🙂',
+    label: '庸庸碌碌',
+    color: '#FBBF24',
+    message: '每天都想裸辞，但又怕吃不起饭。',
+  },
+  {
+    value: 3.1,
+    emoji: '😎',
+    label: '如鱼得水',
+    color: '#34D399',
+    message: '偶尔还能摸鱼，领导居然没发现。',
+  },
+  {
+    value: 4.0,
+    emoji: '👑',
+    label: '锦衣玉食',
+    color: '#60A5FA',
+    message: '打工人中的王者，摸鱼大师本尊。',
+  },
+  {
+    value: 5,
+    emoji: '🚀',
+    label: '登峰造极',
+    color: '#F43F5E',
+    message: '打工是不可能打工的，干脆退休算了！',
+  },
+];
+
+export const getScoreLevel = (score: number) => {
+  // 默认返回最后一个，避免分数过大出错
+  let index = 0;
+  for (let i = 0; i < ScoreLevels.length; i++) {
+    if (score > ScoreLevels[i].value) {
+      index = i;
+    }
+  }
+  return ScoreLevels[index];
+};
+
 export enum WorkEnvironment {
   RemoteFactoryOutdoor = 'remoteFactoryOutdoor', // 偏僻的工厂/工地/户外
   FactoryOutdoor = 'factoryOutdoor', // 工厂/工地/户外

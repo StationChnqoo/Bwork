@@ -1,17 +1,16 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
-import { useFocusEffect } from '@react-navigation/native';
-import { useCaches } from '@src/constants/store';
-import React, { useCallback, useRef } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
+import {useCaches} from '@src/constants/store';
+import React, {useCallback, useRef} from 'react';
+import {Image, StyleSheet, View} from 'react-native';
 
-import Find from '../Find';
-import Home from '../Home';
-import My from '../My';
-import { RootStacksProp } from '../Screens';
-import { NewModalRef } from './components/NewModal';
 import dayjs from 'dayjs';
+import Find from '../Find';
+import My from '../My';
+import {RootStacksProp} from '../Screens';
 import WorthTester from '../WorthTester';
+import {NewModalRef} from './components/NewModal';
 
 const Tab = createBottomTabNavigator();
 interface MyProps {
@@ -19,8 +18,8 @@ interface MyProps {
 }
 
 const BottomTabs = (props: MyProps) => {
-  const { theme, freeUsed, setFreeUsed } = useCaches();
-  const { navigation } = props;
+  const {theme, freeUsed, setFreeUsed} = useCaches();
+  const {navigation} = props;
   const modalRef = useRef<NewModalRef>(null);
 
   const screens = [
@@ -49,14 +48,14 @@ const BottomTabs = (props: MyProps) => {
       // setIsShowNewModal(true);
       let today = dayjs().format('YYYY-MM-DD');
       if (freeUsed.key != today) {
-        setFreeUsed({ key: today, value: 0 });
+        setFreeUsed({key: today, value: 0});
       }
       return () => {};
     }, []),
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{flex: 1}}>
       <Tab.Navigator id={undefined}>
         {screens.map((it, i) => (
           <Tab.Screen
@@ -67,10 +66,10 @@ const BottomTabs = (props: MyProps) => {
               headerShown: false,
               tabBarLabel: it.label,
               tabBarActiveTintColor: theme,
-              tabBarIcon: ({ color }) => (
+              tabBarIcon: ({color}) => (
                 <Image
                   source={it.icon}
-                  style={{ height: 24, width: 24, tintColor: color }}
+                  style={{height: 24, width: 24, tintColor: color}}
                 />
               ),
             }}
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4, // Android 阴影
     shadowColor: '#000', // iOS 阴影
-    shadowOffset: { width: 0, height: 0.1 },
+    shadowOffset: {width: 0, height: 0.1},
     shadowOpacity: 0.4,
     shadowRadius: 4,
   },

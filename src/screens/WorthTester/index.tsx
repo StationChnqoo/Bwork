@@ -36,12 +36,14 @@ import {
   View,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {RootStacksProp} from '../Screens';
+import {RootStacksParams, RootStacksProp} from '../Screens';
 import BottomBar from './components/BottomBar';
 import Tags from './components/Tags';
+import {RouteProp} from '@react-navigation/native';
 
 interface MyProps {
   navigation?: RootStacksProp;
+  route?: RouteProp<RootStacksParams, 'WorthReport'>;
 }
 
 const WorkthTester: React.FC<MyProps> = props => {
@@ -500,7 +502,7 @@ const WorkthTester: React.FC<MyProps> = props => {
         score={score}
         dailySalary={calculateDailySalary}
         onPress={() => {
-          navigation.navigate('WorthReport');
+          navigation.navigate('WorthReport', {score});
         }}
       />
     </View>
