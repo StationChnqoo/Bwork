@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   tag: {
     alignItems: 'center',

@@ -3,7 +3,6 @@ import {createJSONStorage, devtools, persist} from 'zustand/middleware';
 
 import {MMKV} from 'react-native-mmkv';
 import {StateStorage} from 'zustand/middleware';
-import {Game, JobInput, KeyValue} from './t';
 import {
   CanteenQuality,
   CityTier,
@@ -16,6 +15,7 @@ import {
   WorkEnvironment,
   WorkExperience,
 } from './c';
+import {Game, JobInput, KeyValue} from './t';
 
 const mmkv = new MMKV();
 const mmkvStorage: StateStorage = {
@@ -29,24 +29,14 @@ interface States {
   increase: (by: number) => void;
   theme: string;
   setTheme: (theme: string) => void;
-  defaultGame: string;
-  setDefaultGame: (game: string) => void;
-  cardSound: boolean;
-  setCardCound: (cardSoud: boolean) => void;
   isKeyboardFeedback: boolean;
   setIsKeyboardFeedback: (isKeyboardFeedback: boolean) => void;
   games: Game[];
   setGames: (games: Game[]) => void;
   freeUsed: KeyValue;
   setFreeUsed: (freeUsed: KeyValue) => void;
-  autoRevertGame: boolean;
-  setAutoRevertGame: (autoRevertGame: boolean) => void;
   pack: number;
   setPack: (pack: number) => void;
-  isEagle: boolean; // 是否带鹰
-  setIsEagle: (isEagle: boolean) => void;
-  gameArea: string; // 'wf' | 'fk'; // 潍坊 | 疯狂
-  setGameArea: (gameArea: 'wf' | 'fk') => void;
   formData: JobInput;
   setFormData: (formData: JobInput) => void;
 }
@@ -54,15 +44,10 @@ interface States {
 const initialState = {
   bears: 0,
   theme: '#987123',
-  defaultGame: 'bh',
-  cardSound: true,
   isKeyboardFeedback: true,
   games: [],
   freeUsed: {key: '2025-07-26', value: 0},
-  autoRevertGame: true,
   pack: 4,
-  isEagle: true, // 默认带鹰
-  gameArea: 'wf', // 默认潍坊
   formData: {
     jobStability: JobStability.Private, // 默认私企
     city: CityTier.FirstTier, // 默认一线城市
@@ -80,11 +65,11 @@ const initialState = {
     slackingHoursPerDay: '1', // 每天摸鱼 1 小时
     weeklyDays: '5', // 每周工作天数 5
     weeklyWFH: '0', // 每周居家 0 天
-    sickLeave: '3', // 带薪病假 3 天
-    publicHolidays: '11', // 国家法定节假日 11 天
+    sickLeave: '0', // 带薪病假 3 天
+    publicHolidays: '13', // 国家法定节假日 11 天
     companyAnnualLeave: '5', // 公司年假 5 天
     shuttle: ShuttleService.Unreachable, // 默认无班车
-    canteen: CanteenQuality.Average, // 默认食堂一般
+    canteen: CanteenQuality.Terrible, // 默认食堂一般
   },
 };
 
@@ -95,15 +80,10 @@ const useCaches = create<States>()(
         ...initialState,
         increase: by => set(state => ({bears: state.bears + by})),
         setTheme: theme => set({theme}),
-        setDefaultGame: defaultGame => set({defaultGame}),
-        setCardCound: cardSound => set({cardSound}),
         setIsKeyboardFeedback: isKeyboardFeedback => set({isKeyboardFeedback}),
         setGames: games => set({games}),
         setFreeUsed: freeUsed => set({freeUsed}),
-        setAutoRevertGame: autoRevertGame => set({autoRevertGame}),
         setPack: pack => set({pack}),
-        setIsEagle: isEagle => set({isEagle}),
-        setGameArea: gameArea => set({gameArea}),
         setFormData: formData => set({formData}),
       }),
       {
@@ -113,15 +93,10 @@ const useCaches = create<States>()(
         partialize: state => ({
           bears: state.bears,
           theme: state.theme,
-          defaultGame: state.defaultGame,
-          cardSound: state.cardSound,
           isKeyboardFeedback: state.isKeyboardFeedback,
           games: state.games,
           freeUsed: state.freeUsed,
           pack: state.pack,
-          isEagle: state.isEagle,
-          autoRevertGame: state.autoRevertGame,
-          gameArea: state.gameArea,
         }),
       },
     ),

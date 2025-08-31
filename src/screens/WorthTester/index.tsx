@@ -3,7 +3,6 @@ import MoreButton from '@src/components/MoreButton';
 import Stepper from '@src/components/Stepper';
 import {
   calcEducationFactor,
-  CanteenQuality,
   CanteenQualityOptions,
   CityTierOptions,
   ColleagueRelationOptions,
@@ -13,7 +12,6 @@ import {
   JobStability,
   JobStabilityOptions,
   LeaderRelationOptions,
-  ShuttleService,
   ShuttleServiceOptions,
   Tips,
   UniversityTypeOptions,
@@ -39,8 +37,8 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RootStacksProp} from '../Screens';
-import Tags from './components/Tags';
 import BottomBar from './components/BottomBar';
+import Tags from './components/Tags';
 
 interface MyProps {
   navigation?: RootStacksProp;
@@ -48,20 +46,12 @@ interface MyProps {
 
 const WorkthTester: React.FC<MyProps> = props => {
   const {navigation} = props;
-  const {theme, games, pack, setIsEagle, setGames, formData, setFormData} =
-    useCaches();
+  const {theme, games, pack, setGames, formData, setFormData} = useCaches();
 
   const height = Platform.select({
     ios: useSafeAreaInsets().top,
     android: StatusBar.currentHeight,
   });
-
-  useEffect(() => {
-    if (pack == 4) {
-      setIsEagle(false);
-    }
-    return function () {};
-  }, [pack]);
 
   const updateForm = (key: keyof JobInput, value: any) => {
     console.log('formData: ', formData);
@@ -484,7 +474,7 @@ const WorkthTester: React.FC<MyProps> = props => {
             <Text style={styles.groupTitle}>加分项</Text>
             <View style={{height: 10}} />
             <Text style={{color: '#333', fontSize: 14}}>班车情况</Text>
-            <View style={{height: 5}} />
+            <View style={{height: 10}} />
             <Tags
               datas={ShuttleServiceOptions}
               onPress={s => {
@@ -494,7 +484,7 @@ const WorkthTester: React.FC<MyProps> = props => {
             />
             <View style={{height: 10}} />
             <Text style={{color: '#333', fontSize: 14}}>食堂情况</Text>
-            <View style={{height: 5}} />
+            <View style={{height: 10}} />
             <Tags
               datas={CanteenQualityOptions}
               onPress={s => {
